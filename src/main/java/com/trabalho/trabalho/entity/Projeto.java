@@ -1,11 +1,11 @@
 package com.trabalho.trabalho.entity;
-
 import java.time.LocalDate;
 
 import com.trabalho.trabalho.enums.ProjetoPrioridade;
 import com.trabalho.trabalho.enums.ProjetoStatus;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -20,9 +20,9 @@ public class Projeto {
     private LocalDate dataInicio;
     private LocalDate dataFim;
 
-    @Enumerated 
+    @Enumerated(EnumType.STRING)
     private ProjetoStatus status;
-    @Enumerated 
+    @Enumerated(EnumType.STRING)
     private ProjetoPrioridade prioridade;
 
 
@@ -72,6 +72,12 @@ public class Projeto {
     }
     public void setStatus(ProjetoStatus status) {
         this.status = status;
+    }
+    public ProjetoPrioridade getPrioridade() {
+        return prioridade;
+    }
+    public void setPrioridade(ProjetoPrioridade prioridade) {
+        this.prioridade = prioridade;
     }
 
 }
