@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.trabalho.trabalho.entity.Projeto;
 import com.trabalho.trabalho.enums.ProjetoPrioridade;
@@ -26,34 +27,53 @@ public class ProjetoController {
         this.projetoService = projetoService;
     }
 
-    @PostMapping("/criar")
-    public ResponseEntity<Projeto> criarProjeto(
-        @RequestParam String nome,
-        @RequestParam String descricao,
-        @RequestParam String dataInicio,
-        @RequestParam String dataFim,
-        @RequestParam ProjetoStatus status,        
-        @RequestParam ProjetoPrioridade prioridade){
-             
-        Projeto projeto = new Projeto();
+    
+@PostMapping("/criar")
+public ResponseEntity<?> criarProjeto(
+    @RequestParam String nome,
+    @RequestParam String descricao,
+    @RequestParam String dataInicio,
+    @RequestParam String dataFim,
+    @RequestParam ProjetoStatus status,
+    @RequestParam ProjetoPrioridade prioridade) {
 
-        projeto.setNome(nome);
-        projeto.setDescricao(descricao);        
-        projeto.setPrioridade(prioridade);
-        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        projeto.setDataInicio(java.time.LocalDate.parse(dataInicio, formato));
-        projeto.setDataFim(java.time.LocalDate.parse(dataFim, formato));
-        projeto.setStatus(status);
-           
-        Projeto novoProjeto = projetoService.criarProjeto(projeto);
-        return ResponseEntity.ok(novoProjeto);
+    Projeto projeto = new Projeto();
 
-        
+    projeto.setNome(nome);
+    projeto.setDescricao(descricao);
+    projeto.setPrioridade(prioridade);
+
+    DateTimeFormatter formato =
+        DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    projeto.setDataInicio(
+        java.time.LocalDate.parse(dataInicio, formato));
+
+    projeto.setDataFim(
+        java.time.LocalDate.parse(dataFim, formato));
+
+    projeto.setStatus(status);
+
+    
+    if (projeto.getDataInicio().isAfter(projeto.getDataFim())) {
+        return ResponseEntity.badRequest()
+            .body("Erro: a data de início não pode ser maior que a data de fim!");
     }
 
-    @PutMapping ("/atualizar")
+    if (nome == null || nome.trim().isEmpty()) {
+        return ResponseEntity.badRequest()
+            .body("Erro: o nome do projeto não pode ser nulo ou vazio!");
+    }
+
+    Projeto novoProjeto = projetoService.criarProjeto(projeto);
+
+    return ResponseEntity.ok(novoProjeto);
+}
+
+
+    @PutMapping ("/atualizar/{id}")
     public ResponseEntity<Projeto> atualizarProjeto(
-        @RequestParam int id,
+        @PathVariable int id,
         @RequestParam String nome,
         @RequestParam String descricao,
         @RequestParam String dataInicio,
@@ -70,7 +90,7 @@ public class ProjetoController {
         projeto.setDataInicio(java.time.LocalDate.parse(dataInicio, formato));
         projeto.setDataFim(java.time.LocalDate.parse(dataFim, formato));
         projeto.setStatus(status);
-           
+    
         Projeto novoProjeto = projetoService.criarProjeto(projeto);
         return ResponseEntity.ok(novoProjeto);
 
@@ -83,10 +103,24 @@ public class ProjetoController {
         
     }
 
-    @GetMapping ("/consultarprojetoporid")
-    public ResponseEntity<Projeto> consultarProjetoPorId(@RequestParam int id){
-        return ResponseEntity.ok(projetoService.consultarProjetoPorId(id));
+    
+@GetMapping("/consultarprojetoporid")
+public ResponseEntity<?> consultarProjetoPorId(@RequestParam int id) {
+
+    if (id <= 0) {
+        return ResponseEntity.badRequest()
+            .body("O ID deve ser maior que zero.");
     }
+
+    Projeto projeto = projetoService.consultarProjetoPorId(id);
+
+    if (projeto == null) {
+        return ResponseEntity.notFound().build();
+    }
+
+    return ResponseEntity.ok(projeto);
+}
+
 
 
     @GetMapping ("/consultardescricaoporid")
